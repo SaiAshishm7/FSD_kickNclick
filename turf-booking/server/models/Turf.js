@@ -24,9 +24,10 @@ const turfSchema = new mongoose.Schema({
         type: String,
         enum: ['parking', 'washroom', 'changing_room', 'water', 'floodlights', 'Floodlights', 'equipment', 'First Aid', 'Changing Rooms', 'Water']
     }],
-    images: [{
-        type: String  // URLs to images
-    }],
+    images: {
+        type: [String],
+        default: ['/public/images/default-turf.jpg']
+    },
     basePrice: {
         type: Number,
         required: true

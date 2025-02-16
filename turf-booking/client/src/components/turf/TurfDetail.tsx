@@ -20,7 +20,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { fetchTurfById } from '../../store/turfSlice';
-import { createBooking } from '../../store/bookingSlice';
+import { createBooking, fetchUserBookings } from '../../store/bookingSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
@@ -59,18 +59,32 @@ const TurfDetail = () => {
     };
 
     const handleBooking = async () => {
-        if (!selectedDate || !startTime || !endTime || !id) return;
+        if (!turf) {
+            console.error('Turf is not defined');
+            return; 
+        }
+
+        if (!selectedDate || !startTime || !endTime) {
+            console.error('Date or time is not defined');
+            return; 
+        }
 
         const bookingData = {
-            turfId: id,
+            turfId: turf._id,
             date: selectedDate.toISOString().split('T')[0],
-            startTime: startTime.toTimeString().split(' ')[0],
-            endTime: endTime.toTimeString().split(' ')[0]
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
         };
 
+        console.log('Booking data being sent:', bookingData);
+
         try {
-            await dispatch(createBooking(bookingData)).unwrap();
-            navigate('/bookings');
+            const resultAction = await dispatch(createBooking(bookingData));
+
+            if (createBooking.fulfilled.match(resultAction)) {
+                dispatch(fetchUserBookings());
+                navigate('/bookings');
+            }
         } catch (err) {
             console.error('Booking failed:', err);
         }

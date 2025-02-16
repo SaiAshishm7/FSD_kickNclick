@@ -37,12 +37,12 @@ function App() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
-        // If we have a token, try to get the user profile
         const token = localStorage.getItem('token');
-        if (token) {
+        console.log('Token found:', token);
+        if (token && !isAuthenticated) {
             dispatch(getProfile());
         }
-    }, [dispatch]);
+    }, [dispatch, isAuthenticated]);
 
     return (
         <ThemeProvider theme={theme}>
@@ -61,6 +61,7 @@ function App() {
                                 <TurfList />
                             </ProtectedRoute>
                         } />
+                        <Route path="/turf/:id" element={<TurfDetail />} />
                         <Route path="/turfs/:id" element={
                             <ProtectedRoute>
                                 <TurfDetail />

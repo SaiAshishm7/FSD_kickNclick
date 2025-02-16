@@ -18,6 +18,9 @@ import { AppDispatch, RootState } from '../../store/store';
 const BookingList = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { bookings, loading, error } = useSelector((state: RootState) => state.booking);
+    const userId = useSelector((state: RootState) => state.auth.user?._id);
+    console.log('User ID:', userId);
+    console.log('Fetched Bookings:', bookings);
 
     useEffect(() => {
         dispatch(fetchUserBookings());
@@ -26,6 +29,7 @@ const BookingList = () => {
     const handleCancelBooking = async (bookingId: string) => {
         try {
             await dispatch(cancelBooking(bookingId)).unwrap();
+            alert('Cancelled booking successfully!'); // Alert for successful cancellation
         } catch (error) {
             console.error('Failed to cancel booking:', error);
         }

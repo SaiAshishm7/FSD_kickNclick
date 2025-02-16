@@ -43,7 +43,7 @@ export const createBooking = createAsyncThunk(
 export const fetchUserBookings = createAsyncThunk(
     'booking/fetchUserBookings',
     async () => {
-        const response = await api.get('/bookings/user');
+        const response = await api.get('/bookings/my-bookings');
         return response.data;
     }
 );

@@ -21,19 +21,24 @@ const calculateTotalAmount = (basePrice, isPeakHour) => {
 };
 
 exports.createBooking = async (req, res) => {
+    console.log('Create booking request:', req.body); // Log incoming request
     try {
         const { turfId, date, slot } = req.body;
         const userId = req.user.id;
 
         // Check if slot is available
         const isAvailable = await isSlotAvailable(turfId, date, slot);
+        console.log('Slot availability for turf:', turfId, 'is available:', isAvailable); // Log slot availability
         if (!isAvailable) {
+            console.error('This slot is already booked for turf:', turfId); // Log slot already booked
             return res.status(400).json({ error: 'This slot is already booked' });
         }
 
         // Get turf details
         const turf = await Turf.findById(turfId);
+        console.log('Turf lookup result:', turf); // Log turf lookup result
         if (!turf) {
+            console.error('Turf not found:', turfId); // Log turf not found
             return res.status(404).json({ error: 'Turf not found' });
         }
 
@@ -50,8 +55,11 @@ exports.createBooking = async (req, res) => {
             isPeakHour: slot.isPeakHour,
             status: 'confirmed'
         });
+        console.log('Creating booking:', booking); // Log booking creation
+        console.log('Turf details for booking:', turf); // Log turf details for booking
 
         await booking.save();
+        console.log('Booking created successfully:', booking._id); // Log booking creation success
 
         // Populate booking with turf and user details
         const populatedBooking = await Booking.findById(booking._id)
@@ -80,8 +88,8 @@ exports.createBooking = async (req, res) => {
 
         res.status(201).json(populatedBooking);
     } catch (error) {
-        console.error('Error creating booking:', error);
-        res.status(500).json({ error: 'Failed to create booking' });
+        console.error('Error creating booking:', error); // Log any errors
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 

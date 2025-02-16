@@ -26,6 +26,9 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import SportsCricketIcon from '@mui/icons-material/SportsCricket';
 import SportsBasketballIcon from '@mui/icons-material/SportsBasketball';
 
+// Ensure the API_BASE_URL points to your local server
+const API_BASE_URL = 'http://localhost:5001';
+
 const TurfList = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
@@ -99,7 +102,7 @@ const TurfList = () => {
                                     <CardMedia
                                         component="img"
                                         height="140"
-                                        image={turf.images[0] || 'https://via.placeholder.com/300x140?text=No+Image'}
+                                        image={`${API_BASE_URL}${turf.images?.[0] || '/public/images/default-turf.jpg'}`}
                                         alt={turf.name}
                                     />
                                     <CardContent sx={{ flexGrow: 1 }}>
@@ -142,7 +145,11 @@ const TurfList = () => {
                                         <Button
                                             variant="contained"
                                             fullWidth
-                                            onClick={() => navigate(`/turf/${turf._id}`)}
+                                            onClick={() => {
+                                                alert(`Button clicked for turf ID: ${turf._id}`); 
+                                                alert('Navigating to booking page...'); 
+                                                navigate(`/turf/${turf._id}`);
+                                            }}
                                         >
                                             Book Now
                                         </Button>

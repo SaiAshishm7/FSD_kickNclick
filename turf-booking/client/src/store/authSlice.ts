@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../utils/axios';
+import { AppDispatch, RootState } from './store';
 
 export interface User {
     id: string;
@@ -50,17 +51,19 @@ export const register = createAsyncThunk(
     }
 );
 
+let getProfileCallCount = 0;
 export const getProfile = createAsyncThunk(
-    'auth/profile',
-    async (_, { getState }: any) => {
-        const { token } = getState().auth;
-        if (!token) throw new Error('No token found');
-        
+    'auth/getProfile',
+    async (_, { getState }) => {
+        getProfileCallCount++;
+        console.log(`getProfile called ${getProfileCallCount} times`);
+        const state = getState() as RootState;
+        const { token } = state.auth;
+        console.log('Fetching profile with token:', token);
         const response = await api.get('/auth/profile', {
             headers: { Authorization: `Bearer ${token}` }
         });
-        // Update stored user data
-        localStorage.setItem('user', JSON.stringify(response.data));
+        console.log('Profile fetched:', response.data);
         return response.data;
     }
 );
@@ -117,18 +120,12 @@ const authSlice = createSlice({
             .addCase(getProfile.fulfilled, (state, action) => {
                 state.loading = false;
                 state.user = action.payload;
+                state.isAuthenticated = true;
             })
-            .addCase(getProfile.rejected, (state, action) => {
+            .addCase(getProfile.rejected, (state) => {
                 state.loading = false;
-                state.error = action.error.message || 'Failed to fetch profile';
-                // If unauthorized, clear auth state
-                if (action.error.message?.includes('401')) {
-                    state.user = null;
-                    state.token = null;
-                    state.isAuthenticated = false;
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                }
+                state.user = null;
+                state.isAuthenticated = false;
             });
     }
 });

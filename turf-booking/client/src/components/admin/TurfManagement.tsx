@@ -24,7 +24,8 @@ import {
     MenuItem,
     SelectChangeEvent,
     CircularProgress,
-    Alert
+    Alert,
+    Snackbar
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -71,6 +72,7 @@ const TurfManagement = () => {
     const [formData, setFormData] = useState<TurfFormData>(initialFormData);
     const [editingTurf, setEditingTurf] = useState<string | null>(null);
     const [imagePreview, setImagePreview] = useState<string[]>([]);
+    const [success, setSuccess] = useState<string>('');
 
     const fetchTurfs = async () => {
         try {
@@ -153,10 +155,28 @@ const TurfManagement = () => {
         }
     };
 
+    const validateForm = () => {
+        if (!formData.name) return 'Name is required';
+        if (!formData.type) return 'Type is required';
+        if (!formData.location.address) return 'Address is required';
+        if (!formData.location.city) return 'City is required';
+        if (!formData.basePrice || formData.basePrice <= 0) return 'Valid base price is required';
+        return '';
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        const validationError = validateForm();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setLoading(true);
         try {
-            setLoading(true);
             const formDataToSend = new FormData();
             formDataToSend.append('name', formData.name);
             formDataToSend.append('type', formData.type);
@@ -177,8 +197,10 @@ const TurfManagement = () => {
 
             handleCloseDialog();
             fetchTurfs();
+            setSuccess('Turf created/updated successfully!');
         } catch (err: any) {
             setError(err.response?.data?.error || 'Error saving turf');
+            console.error('Error creating/updating turf:', err);
         } finally {
             setLoading(false);
         }
@@ -421,6 +443,17 @@ const TurfManagement = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <Snackbar
+                open={!!success}
+                autoHideDuration={6000}
+                onClose={() => setSuccess('')}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity="success" onClose={() => setSuccess('')}>
+                    {success}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

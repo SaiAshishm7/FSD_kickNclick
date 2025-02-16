@@ -7,19 +7,23 @@ const { sendBookingConfirmation, sendBookingCancellation } = require('../utils/e
 
 // Get all bookings for the current user
 router.get('/my-bookings', auth, async (req, res) => {
+    console.log('Incoming request to get user bookings:', req.user._id);
     try {
         const bookings = await Booking.find({ user: req.user._id })
             .populate('turf', 'name type location')
             .sort({ date: -1 });
         res.json(bookings);
     } catch (err) {
+        console.error('Error fetching bookings:', err);
         res.status(500).json({ error: 'Error fetching bookings' });
     }
 });
 
 // Get all bookings (admin only)
 router.get('/all', auth, async (req, res) => {
+    console.log('Incoming request to get all bookings:', req.user._id);
     if (req.user.role !== 'admin') {
+        console.error('Unauthorized access to get all bookings:', req.user._id);
         return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -30,85 +34,92 @@ router.get('/all', auth, async (req, res) => {
             .sort({ date: -1 });
         res.json(bookings);
     } catch (err) {
+        console.error('Error fetching all bookings:', err);
         res.status(500).json({ error: 'Error fetching bookings' });
     }
 });
 
 // Create a new booking
 router.post('/', auth, async (req, res) => {
+    console.log('Booking request received:', req.body); // Log incoming request
     try {
-        const { turfId, date, slot } = req.body;
+        const { turfId, date, startTime, endTime } = req.body;
 
-        // Check if turf exists
+        if (!req.body.startTime || !req.body.endTime) {
+            return res.status(400).json({ error: 'Start time or end time is missing or invalid' });
+        }
+
+        console.log('Turf ID:', turfId, 'Date:', date, 'Start Time:', startTime, 'End Time:', endTime);
+
         const turf = await Turf.findById(turfId);
         if (!turf) {
+            console.error('Turf not found:', turfId);
             return res.status(404).json({ error: 'Turf not found' });
         }
 
-        // Check if slot is available
         const existingBooking = await Booking.findOne({
             turf: turfId,
             date,
-            'slot.startTime': slot.startTime,
-            'slot.endTime': slot.endTime,
+            'slot.startTime': req.body.startTime,
+            'slot.endTime': req.body.endTime,
             status: { $ne: 'cancelled' }
         });
 
         if (existingBooking) {
+            console.error('Slot is already booked:', existingBooking);
             return res.status(400).json({ error: 'Slot is already booked' });
         }
 
-        // Calculate price
-        const basePrice = turf.basePrice;
-        const isPeakHour = parseInt(slot.startTime.split(':')[0]) >= 17 && parseInt(slot.startTime.split(':')[0]) <= 21;
-        const totalAmount = isPeakHour ? basePrice * 1.2 : basePrice;
+        const durationInHours = (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60);
+        const totalAmount = turf.basePrice * durationInHours;
 
-        // Create booking
         const booking = new Booking({
             user: req.user._id,
             turf: turfId,
             date,
-            slot,
+            slot: { startTime, endTime },
             totalAmount,
-            isPeakHour,
-            status: 'confirmed'
+            status: 'confirmed', // Set status to confirmed
         });
 
         await booking.save();
-
-        // Populate the booking with user and turf details
-        await booking.populate('user turf');
-
-        // Send confirmation email
-        await sendBookingConfirmation(booking, booking.user);
-
         res.status(201).json(booking);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        console.error('Error during booking:', err);
+        res.status(500).json({ error: 'Error during booking' });
     }
 });
 
 // Cancel booking
 router.post('/:id/cancel', auth, async (req, res) => {
+    console.log('Incoming request to cancel booking:', req.params.id); // Log incoming request
     try {
         const booking = await Booking.findById(req.params.id);
         
         if (!booking) {
+            console.error('Booking not found:', req.params.id); // Log booking not found
             return res.status(404).json({ error: 'Booking not found' });
         }
 
         // Check if user owns the booking or is admin
         if (booking.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            console.error('Unauthorized access to cancel booking:', req.user._id); // Log unauthorized access
             return res.status(403).json({ error: 'Not authorized' });
         }
 
-        // Check if booking can be cancelled (e.g., not already cancelled and not in the past)
+        // Check if booking can be cancelled (e.g., not already cancelled)
         if (booking.status === 'cancelled') {
+            console.error('Booking is already cancelled:', booking); // Log booking already cancelled
             return res.status(400).json({ error: 'Booking is already cancelled' });
         }
 
+        const currentDate = new Date();
+        console.log('Current Date and Time:', currentDate);
+
         const bookingDate = new Date(booking.date);
-        if (bookingDate < new Date()) {
+        const bookingStartTime = new Date(`${booking.date}T${booking.slot.startTime}`);
+        if (bookingStartTime < currentDate) {
+            console.error('Cannot cancel past bookings:', booking); // Log cannot cancel past bookings
             return res.status(400).json({ error: 'Cannot cancel past bookings' });
         }
 
@@ -118,7 +129,10 @@ router.post('/:id/cancel', auth, async (req, res) => {
         // Get turf details for email
         const turf = await Turf.findById(booking.turf);
 
+        console.log('Turf object for cancellation email:', turf);
+
         // Send cancellation email
+        console.log('User object for cancellation email:', req.user);
         await sendBookingCancellation(req.user.email, {
             userName: req.user.name,
             turfName: turf.name,
@@ -129,6 +143,7 @@ router.post('/:id/cancel', auth, async (req, res) => {
 
         res.json(booking);
     } catch (err) {
+        console.error('Error during booking cancellation:', err); // Log any errors
         res.status(400).json({ error: err.message });
     }
 });
