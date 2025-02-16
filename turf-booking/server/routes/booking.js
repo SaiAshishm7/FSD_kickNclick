@@ -51,6 +51,8 @@ router.post('/', auth, async (req, res) => {
 
         console.log('Turf ID:', turfId, 'Date:', date, 'Start Time:', startTime, 'End Time:', endTime);
 
+        console.log('Turf ID:', turfId); // Log the turf ID
+
         const turf = await Turf.findById(turfId);
         if (!turf) {
             console.error('Turf not found:', turfId);
@@ -83,6 +85,8 @@ router.post('/', auth, async (req, res) => {
         });
 
         await booking.save();
+        const user = { name: req.user.name, email: req.user.email }; // Get user details
+        await sendBookingConfirmation(booking, user); // Send email confirmation
         res.status(201).json(booking);
     } catch (err) {
         console.error('Error during booking:', err);
@@ -132,14 +136,8 @@ router.post('/:id/cancel', auth, async (req, res) => {
         console.log('Turf object for cancellation email:', turf);
 
         // Send cancellation email
-        console.log('User object for cancellation email:', req.user);
-        await sendBookingCancellation(req.user.email, {
-            userName: req.user.name,
-            turfName: turf.name,
-            date: booking.date,
-            startTime: booking.slot.startTime,
-            endTime: booking.slot.endTime
-        });
+        const user = { name: req.user.name, email: req.user.email }; // Get user details
+        await sendBookingCancellation(booking, user); // Send cancellation email
 
         res.json(booking);
     } catch (err) {

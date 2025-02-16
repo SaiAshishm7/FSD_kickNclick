@@ -49,14 +49,10 @@ const Dashboard = () => {
     const fetchDashboardStats = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/admin/stats', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.get('http://localhost:5001/api/admin/stats');
             setStats(response.data);
-            setError('');
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to fetch dashboard statistics');
+        } catch (error) {
+            setError('Failed to fetch dashboard stats');
         } finally {
             setLoading(false);
         }
@@ -154,28 +150,30 @@ const Dashboard = () => {
                         <Typography variant="h6" gutterBottom>
                             Popular Turfs
                         </Typography>
-                        <TableContainer>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Turf Name</TableCell>
-                                        <TableCell>Type</TableCell>
-                                        <TableCell align="right">Total Bookings</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {stats.popularTurfs.map((item, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{item.turf.name}</TableCell>
-                                            <TableCell>
-                                                {item.turf.type.charAt(0).toUpperCase() + item.turf.type.slice(1)}
-                                            </TableCell>
-                                            <TableCell align="right">{item.bookingCount}</TableCell>
+                        {stats && stats.popularTurfs ? (
+                            <TableContainer>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Turf Name</TableCell>
+                                            <TableCell>Type</TableCell>
+                                            <TableCell align="right">Total Bookings</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                                    </TableHead>
+                                    <TableBody>
+                                        {stats.popularTurfs.map((item, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{item.turf.name}</TableCell>
+                                                <TableCell>{item.turf.type}</TableCell>
+                                                <TableCell align="right">{item.bookingCount}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        ) : (
+                            <p>No popular turfs available.</p>
+                        )}
                     </Paper>
                 </Grid>
             </Grid>

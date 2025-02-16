@@ -31,8 +31,8 @@ const getBookingConfirmationTemplate = (booking, user) => {
                 <p>If you need to cancel your booking, please do so at least 2 hours before the slot time.</p>
                 
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                    <p style="color: #666;">Thank you for choosing our service!</p>
-                    <p style="color: #666;">The Turf Booking Team</p>
+                    <p style="color: #666;">Thank you for choosing KickNClick!</p>
+                    <p style="color: #666;">The KickNClick Team</p>
                 </div>
             </div>
         `
@@ -57,8 +57,8 @@ const getBookingCancellationTemplate = (booking, user) => {
                 <p>If this was a mistake or you'd like to make a new booking, please visit our website.</p>
                 
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                    <p style="color: #666;">Thank you for choosing our service!</p>
-                    <p style="color: #666;">The Turf Booking Team</p>
+                    <p style="color: #666;">Thank you for choosing KickNClick!</p>
+                    <p style="color: #666;">The KickNClick Team</p>
                 </div>
             </div>
         `

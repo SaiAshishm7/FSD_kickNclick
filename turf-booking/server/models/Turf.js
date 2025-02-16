@@ -22,7 +22,7 @@ const turfSchema = new mongoose.Schema({
     },
     facilities: [{
         type: String,
-        enum: ['parking', 'washroom', 'changing_room', 'water', 'floodlights', 'Floodlights', 'equipment', 'First Aid', 'Changing Rooms', 'Water']
+        enum: ['parking', 'Parking', 'washroom', 'changing_room', 'water', 'floodlights', 'Floodlights', 'equipment', 'First Aid', 'Changing Rooms', 'Water', 'Equipment Rental']
     }],
     images: {
         type: [String],

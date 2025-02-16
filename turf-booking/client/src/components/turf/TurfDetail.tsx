@@ -15,10 +15,11 @@ import {
     CircularProgress,
     Alert,
     Paper,
-    TextField
+    TextField,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import axios from 'axios';
 import { fetchTurfById } from '../../store/turfSlice';
 import { createBooking, fetchUserBookings } from '../../store/bookingSlice';
 import { AppDispatch, RootState } from '../../store/store';
@@ -38,6 +39,7 @@ const TurfDetail = () => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [startTime, setStartTime] = useState<Date | null>(null);
     const [endTime, setEndTime] = useState<Date | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     useEffect(() => {
         if (id) {
@@ -87,6 +89,31 @@ const TurfDetail = () => {
             }
         } catch (err) {
             console.error('Booking failed:', err);
+        }
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            setSelectedFiles(Array.from(event.target.files));
+        }
+    };
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        const formData = new FormData();
+        for (let i = 0; i < selectedFiles.length; i++) {
+            formData.append('images', selectedFiles[i]);
+        }
+
+        try {
+            const response = await axios.post('http://localhost:5001/api/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            console.log('Upload successful:', response.data);
+        } catch (error) {
+            console.error('Error uploading images:', error);
         }
     };
 
@@ -203,6 +230,18 @@ const TurfDetail = () => {
                                     sx={{ width: '100%' }}
                                 />
                             </Box>
+
+                            <form onSubmit={handleSubmit}>
+                                <TextField
+                                    type="file"
+                                    inputProps={{ multiple: true }}
+                                    onChange={handleFileChange}
+                                    fullWidth
+                                />
+                                <Button type="submit" variant="contained" color="primary" fullWidth size="large">
+                                    Upload Images
+                                </Button>
+                            </form>
 
                             {bookingState.error && (
                                 <Alert severity="error" sx={{ mb: 2 }}>

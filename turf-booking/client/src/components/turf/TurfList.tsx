@@ -115,9 +115,15 @@ const TurfList = () => {
 
                                         <Box display="flex" alignItems="center" mb={1}>
                                             <LocationOnIcon fontSize="small" />
-                                            <Typography variant="body2" color="text.secondary" ml={1}>
-                                                {turf.location.address}, {turf.location.city}
-                                            </Typography>
+                                            {turf.location ? (
+                                                <Typography variant="body2" color="text.secondary" ml={1}>
+                                                    {turf.location.address}, {turf.location.city}
+                                                </Typography>
+                                            ) : (
+                                                <Typography variant="body2" color="text.secondary" ml={1}>
+                                                    Location not available
+                                                </Typography>
+                                            )}
                                         </Box>
 
                                         <Box display="flex" alignItems="center" mb={1}>
