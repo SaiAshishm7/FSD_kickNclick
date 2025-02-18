@@ -30,7 +30,7 @@ const Navbar = () => {
                     <SportsSoccerIcon />
                 </IconButton>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Turf Booking
+                    kickNclick
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     {user ? (

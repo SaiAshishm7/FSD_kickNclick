@@ -112,7 +112,7 @@ const AdminLayout: React.FC = () => {
                         <MenuIcon />
                     </IconButton>
                     <Typography variant="h6" noWrap component="div">
-                        Turf Booking Admin
+                        kickNclick Admin
                     </Typography>
                 </Toolbar>
             </AppBar>
